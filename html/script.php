@@ -19,7 +19,6 @@ echo "b = " . $b . "\n";
 
 /* HW2 */
 
-
 /* 1. Реализовать основные 4 арифметические операции в виде функции с тремя 
 параметрами – два параметра это числа, третий – операция. 
 Обязательно использовать оператор return. */
@@ -170,7 +169,7 @@ echo transliter('Привет тебе');
 
 function power($val, $pow)
 {
-    if($pow == 0){
+    if ($pow == 0) {
         return 1;
     }
 
@@ -182,3 +181,209 @@ function power($val, $pow)
 }
 
 echo power(3, 3);
+
+/* HW4 */
+
+/* 1. Придумайте класс, который описывает любую сущность 
+из предметной области библиотеки: книга, шкаф, комната и т.п.
+2. Опишите свойства классов из п.1 (состояние).
+3. Опишите поведение классов из п.1 (методы).
+4. Придумайте наследников классов из п.1. Чем они будут отличаться? */
+
+class LibrarySubscription
+{
+    protected int $number;
+    protected float $price_month;
+    protected int $period_month;
+
+    public function __construct(int $number, float $price_month, int $period_month)
+    {
+        $this->number = $number;
+        $this->price_month = $price_month;
+        $this->period_month = $period_month;
+    }
+
+    public function getNumber(): float
+    {
+        return $this->number;
+    }
+
+    public function setNumber(int $number): void
+    {
+        $this->number = $number;
+    }
+
+    public function getPrice(): float
+    {
+        return $this->price_month;
+    }
+
+    public function setPrice(float $price_month): void
+    {
+        $this->price_month = $price_month;
+    }
+
+    public function getPeriod(): int
+    {
+        return $this->period_month;
+    }
+
+    public function setPeriod(int $period_month): void
+    {
+        $this->period_month = $period_month;
+    }
+
+    public static function getPeriodPriceSum(LibrarySubscription $sub): float
+    {
+        return $sub->price_month * $sub->period_month;
+    }
+}
+
+class StudentLibrarySubscription extends LibrarySubscription
+{
+    protected float $discount;
+    public function __construct(int $number, float $price_month, int $perid_month, float $discount)
+    {
+        parent::__construct($number, $price_month, $perid_month);
+        $this->discount = $discount;
+    }
+    function getFinalPrice(): float
+    {
+        return self::getPeriodPriceSum($this) * (1 - $this->discount);
+    }
+}
+
+class RetireeLibrarySubscription extends StudentLibrarySubscription
+{
+    protected int $increase;
+    public function __construct(int $number, float $price_month, int $perid_month, float $discount, int $increase)
+    {
+        parent::__construct($number, $price_month, $perid_month, $discount);
+        $this->increase = $increase;
+    }
+    function getFinalPeriod(): float
+    {
+        return $this->period_month * $this->increase;
+    }
+}
+
+$sub1 = new LibrarySubscription(1, 100.25, 1);
+$sub2 = new LibrarySubscription(2, 100.25, 2);
+$sub3 = new StudentLibrarySubscription(3, 100.25, 1, 0.5);
+$sub4 = new RetireeLibrarySubscription(4, 100.25, 2, 0.5, 2);
+
+echo LibrarySubscription::getPeriodPriceSum($sub2) . PHP_EOL;
+
+echo $sub3->getFinalPrice() . PHP_EOL;
+
+echo $sub4->getFinalPeriod() . PHP_EOL;
+
+/* 5. Создайте структуру классов ведения книжной номенклатуры.
+— Есть абстрактная книга.
+— Есть цифровая книга, бумажная книга.
+— У каждой книги есть метод получения на руки.
+
+У цифровой книги надо вернуть ссылку на скачивание, 
+а у физической – адрес библиотеки, где ее можно получить. 
+У всех книг формируется в конечном итоге статистика по кол-ву прочтений.
+Что можно вынести в абстрактный класс, а что надо унаследовать? */
+
+
+abstract class Book
+{
+    protected string $name;
+    protected int $number;
+    protected int $count_statistic;
+
+    public function __construct(string $name, int $number, int $count_statistic)
+    {
+        $this->name = $name;
+        $this->number = $number;
+        $this->count_statistic = $count_statistic;
+    }
+}
+
+
+
+class RealBook extends Book
+{
+    protected string $address;
+
+    public function __construct(string $name, int $number, int $count_statistic, string $address)
+    {
+        parent::__construct($name, $number, $count_statistic);
+        $this->address = $address;
+    }
+
+    function getAddress(): string
+    {
+        return $this->address;
+    }
+}
+
+class DigitalBook extends Book
+{
+    protected string $url;
+
+    public function __construct(string $name, int $number, int $count_statistic, string $url)
+    {
+        parent::__construct($name, $number, $count_statistic);
+        $this->url = $url;
+    }
+
+    function getUrl(): string
+    {
+        return $this->url;
+    }
+}
+
+$book1 = new DigitalBook('book1', 1, 0, 'url1');
+$book2 = new RealBook('book2', 2, 0, 'address1');
+
+echo $book1->getUrl() . PHP_EOL;
+echo $book2->getAddress() . PHP_EOL;
+
+/* 6. Дан код: */
+
+class A
+{
+    public function foo()
+    {
+        static $x = 0;
+        echo ++$x;
+    }
+}
+$a1 = new A();
+$a2 = new A();
+$a1->foo();
+$a2->foo();
+$a1->foo();
+$a2->foo();
+
+/* Что он выведет на каждом шаге? Почему?
+Этот код выведет 1234, так как перерменная $x статична,
+и ее значение будет каждый раз увеличиваться так как она
+определяется один раз.
+
+Немного изменим п.5 */
+
+class A
+{
+    public function foo()
+    {
+        static $x = 0;
+        echo ++$x;
+    }
+}
+class B extends A {}
+$a1 = new A();
+$b1 = new B();
+$a1->foo();
+$b1->foo();
+$a1->foo();
+$b1->foo();
+
+/* Что он выведет теперь? */
+/* В этом случае вывод будет тот же сымый, так как переменная так же
+статична и ее определение в функции одно на все классы, поэтому в момент
+повторного обращения экземпляра $b1, переменная так же будет уже увеличина. */
